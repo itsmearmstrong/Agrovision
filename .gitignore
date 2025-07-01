@@ -1,0 +1,76 @@
+# Google Cloud credentials
+*.json
+google-cloud-credentials.json
+strawberry-*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask
+instance/
+.webassets-cache
+
+# Uploaded and processed images
+uploads/
+processed/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local 
+
+# Ignore credentials and sensitive files
+*.json
+google-cloud-credentials.json
+
+# Ignore virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Ignore processed and uploaded files
+uploads/
+processed/

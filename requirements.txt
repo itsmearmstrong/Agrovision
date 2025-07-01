@@ -1,0 +1,20 @@
+# 1. Install dependencies
+google-cloud-vision==3.4.4
+flask==2.3.3
+opencv-python==4.8.1.78
+numpy==1.24.3
+werkzeug==2.3.7
+
+# 1. Create a virtual environment
+python -m venv venv
+
+# 2. Activate it (Windows)
+.\venv\Scripts\activate
+
+# 3. Windows (PowerShell)
+$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\JOSLAN\Desktop\Strawberry Image\google-cloud-credentials.json"
+
+# 4.to run the app
+python app.py
+
+# Run the commands in terminal(1-4)

@@ -1,0 +1,303 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strawberry Plant Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-center">Strawberry Plant Analyzer</h1>
+        
+        <div class="max-w-4xl mx-auto">
+            <!-- Upload Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4">Upload Image or Video</h2>
+                <form id="unifiedUploadForm" class="space-y-4">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <input type="file" id="unifiedInput" accept=".jpg,.jpeg,.png,.mp4,.avi,.mov,.mkv" class="hidden">
+                        <label for="unifiedInput" class="cursor-pointer">
+                            <div class="space-y-2">
+                                <div id="preview" class="hidden mb-4">
+                                    <img id="imagePreview" class="max-h-64 mx-auto">
+                                </div>
+                                <div id="videoPreview" class="hidden mb-4">
+                                    <video id="videoTag" class="max-h-64 mx-auto" controls></video>
+                                </div>
+                                <div class="text-gray-600">
+                                    Click to upload or drag and drop<br>
+                                    PNG, JPG, JPEG, MP4, AVI, MOV, MKV (max. 100MB)
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+                        Analyze
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Results Section -->
+            <div id="results" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <h2 class="text-xl font-semibold mb-4">Analysis Results</h2>
+                
+                <!-- Processed Image -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-2">Analyzed Image</h3>
+                    <div class="bg-gray-100 rounded-lg p-4 text-center">
+                        <img id="processedImage" class="max-w-full mx-auto">
+                    </div>
+                </div>
+                
+                <!-- Ripe Strawberries -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-2">Ripe Strawberries</h3>
+                    <div id="ripeStrawberries" class="bg-green-100 rounded-lg p-4">
+                        <div id="strawberryCount" class="text-center mb-4">
+                            <span class="text-2xl font-bold text-green-800">0</span>
+                            <span class="text-lg text-green-700"> ripe strawberries detected</span>
+                        </div>
+                        <div id="strawberryList"></div>
+                    </div>
+                </div>
+                
+                <!-- Weed Detection -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-2">Weed Detection</h3>
+                    <div id="weedDetection" class="bg-yellow-100 rounded-lg p-4"></div>
+                </div>
+                
+                <!-- Disease Detection -->
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Disease Detection</h3>
+                    <div id="diseaseDetection" class="rounded-lg mb-6"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const unifiedInput = document.getElementById('unifiedInput');
+        const unifiedUploadForm = document.getElementById('unifiedUploadForm');
+        const preview = document.getElementById('preview');
+        const imagePreview = document.getElementById('imagePreview');
+        const videoPreview = document.getElementById('videoPreview');
+        const videoTag = document.getElementById('videoTag');
+        const results = document.getElementById('results');
+        const processedImage = document.getElementById('processedImage');
+
+        unifiedInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (["jpg", "jpeg", "png"].includes(ext)) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                        videoPreview.classList.add('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                } else if (["mp4", "avi", "mov", "mkv"].includes(ext)) {
+                    const url = URL.createObjectURL(file);
+                    videoTag.src = url;
+                    videoPreview.classList.remove('hidden');
+                    preview.classList.add('hidden');
+                }
+            }
+        });
+
+        // Handle drag and drop
+        const dropArea = document.querySelector('.border-dashed');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('border-blue-500', 'bg-blue-50');
+            dropArea.classList.remove('border-gray-300');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('border-blue-500', 'bg-blue-50');
+            dropArea.classList.add('border-gray-300');
+        }
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                unifiedInput.files = files;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(files[0]);
+            }
+        }
+
+        unifiedUploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!unifiedInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+            const file = unifiedInput.files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            const formData = new FormData();
+            formData.append('file', file);
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.textContent = 'Analyzing...';
+            submitBtn.disabled = true;
+            try {
+                let endpoint = '';
+                if (["jpg", "jpeg", "png"].includes(ext)) {
+                    endpoint = '/analyze';
+                } else if (["mp4", "avi", "mov", "mkv"].includes(ext)) {
+                    endpoint = '/analyze_video';
+                } else {
+                    alert('Unsupported file type');
+                    submitBtn.textContent = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    if (endpoint === '/analyze') {
+                        displayResults(data);
+                        results.classList.remove('hidden');
+                        results.scrollIntoView({ behavior: 'smooth' });
+                    } else if (endpoint === '/analyze_video') {
+                        // Display all frames together and show total ripe strawberries
+                        if (data.frames && data.frames.length > 0) {
+                            let totalRipe = 0;
+                            data.frames.forEach(frame => {
+                                totalRipe += frame.results.ripe_strawberries.length;
+                            });
+                            let galleryHtml = `<div class='mb-6'><h2 class='text-xl font-semibold mb-4'>Video Analysis Results</h2><div class='mb-4'><span class='text-2xl font-bold text-green-800'>${totalRipe}</span> <span class='text-lg text-green-700'>total ripe strawberries detected across all frames</span></div><div class='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>`;
+                            data.frames.forEach(frame => {
+                                galleryHtml += `
+                                    <div class='bg-white rounded-lg shadow-md p-4'>
+                                        <div class='mb-2 text-sm text-gray-500'>Frame at ${frame.timestamp}s</div>
+                                        <div class='bg-gray-100 rounded-lg p-2 text-center mb-2'>
+                                            <img src="/processed/${frame.processed_image}" class="max-w-full mx-auto" style="border:2px solid #22c55e;">
+                                        </div>
+                                        <div class='text-sm text-green-800 font-semibold'>Ripe: ${frame.results.ripe_strawberries.length}</div>
+                                    </div>
+                                `;
+                            });
+                            galleryHtml += '</div></div>';
+                            results.innerHTML = galleryHtml;
+                            results.classList.remove('hidden');
+                            results.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            alert('No frames with strawberries or diseases detected.');
+                        }
+                    }
+                } else {
+                    alert(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                alert('An error occurred while analyzing the file');
+                console.error(error);
+            } finally {
+                submitBtn.textContent = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        function displayResults(data) {
+            // Show processed image with bounding boxes
+            processedImage.src = `/processed/${data.processed_image}`;
+            
+            // Update Ripe Strawberries
+            const strawberriesDiv = document.getElementById('ripeStrawberries');
+            const strawberryCount = document.getElementById('strawberryCount');
+            const strawberryList = document.getElementById('strawberryList');
+            
+            if (data.ripe_strawberries && data.ripe_strawberries.length > 0) {
+                // Update count
+                strawberryCount.innerHTML = `
+                    <span class="text-2xl font-bold text-green-800">${data.ripe_strawberries.length}</span>
+                    <span class="text-lg text-green-700"> ripe strawberries detected</span>
+                `;
+                
+                // Update list
+                strawberryList.innerHTML = data.ripe_strawberries.map(s => 
+                    `<div class="mb-2">
+                        <p class="font-medium">${s.name}: ${(s.confidence * 100).toFixed(1)}% confidence</p>
+                    </div>`
+                ).join('');
+            } else {
+                strawberryCount.innerHTML = `
+                    <span class="text-2xl font-bold text-green-800">0</span>
+                    <span class="text-lg text-green-700"> ripe strawberries detected</span>
+                `;
+                strawberryList.innerHTML = '<p>No ripe strawberries detected</p>';
+            }
+
+            // Update Weed Detection
+            const weedsDiv = document.getElementById('weedDetection');
+            if (data.weeds && data.weeds.length > 0) {
+                weedsDiv.innerHTML = data.weeds.map(w => 
+                    `<div class="mb-2">
+                        <p class="font-medium">${w.label}: ${(w.confidence * 100).toFixed(1)}% confidence</p>
+                        <p class="text-sm text-gray-600">Remove promptly to prevent competition with strawberry plants.</p>
+                    </div>`
+                ).join('');
+            } else {
+                weedsDiv.innerHTML = '<p>No weeds detected</p>';
+            }
+
+            // Update Disease Detection
+            const diseasesDiv = document.getElementById('diseaseDetection');
+            
+            if (data.diseases && data.diseases.length > 0) {
+                diseasesDiv.innerHTML = data.diseases.map(d => `
+                    <div class="bg-red-100 rounded-lg p-4 mb-4">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-red-800">${d.name}</h4>
+                            <span class="bg-red-200 text-red-800 px-2 py-1 rounded text-sm">
+                                ${(d.confidence * 100).toFixed(1)}% confidence
+                            </span>
+                        </div>
+                        <p class="text-gray-700 mb-2">${d.description}</p>
+                        <div class="mt-3">
+                            <h5 class="font-semibold text-green-800">Recommended Solution:</h5>
+                            <p class="bg-green-50 p-3 rounded mt-1">${d.solution}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                diseasesDiv.innerHTML = '<div class="bg-green-100 rounded-lg p-4"><p>No diseases detected</p></div>';
+            }
+        }
+    </script>
+</body>
+</html>
